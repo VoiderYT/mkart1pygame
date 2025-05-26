@@ -18,11 +18,16 @@ decorWidth = 320*2
 backdrop = pygame.image.load("images/backdrop.png").convert_alpha()
 backdrop = pygame.transform.scale(backdrop, (decorWidth, backdrop.get_height()/backdrop.get_width()*decorWidth))
 
-player = {"x":0 , "y":0 , "z":0, "dir":0}
+def splitTileSet(image, width=32, height=32) -> list:
+    return [image.subsurface((x*width, y*height, width, height)) for x in range(image.get_width()//width) for y in range(image.get_height()//height)]
+
+player = {"x":0 , "y":0 , "z":0, "dir":0, "vx":0, "vy":0}
 cJumpSprite = pygame.image.load("images/player/chargedjump.png").convert_alpha()
+cJumpSprites = splitTileSet(cJumpSprite)
 cJumping = False
 cJumpingTimer = 0
-playerSprites = {"front":[pygame.image.load("images/player/forward.png").convert_alpha()],"left":[pygame.image.load("images/player/left.png").convert_alpha()],"right":[pygame.image.load("images/player/right.png").convert_alpha()],"charged":[cJumpSprite.subsurface(0,0,32,32),cJumpSprite.subsurface(32,0,32,32)], "driftingLeft":[pygame.image.load("images/player/left2.png").convert_alpha()], "driftingRight":[pygame.image.load("images/player/right2.png").convert_alpha()]}
+playerSprites = {"front":[pygame.image.load("images/player/forward.png").convert_alpha()],"left":[pygame.image.load("images/player/left.png").convert_alpha()],"right":[pygame.image.load("images/player/right.png").convert_alpha()],"charged":cJumpSprites, "driftingLeft":[pygame.image.load("images/player/left2.png").convert_alpha()], "driftingRight":[pygame.image.load("images/player/right2.png").convert_alpha()]}
+effectSprites = {"driftingLeft1":splitTileSet(pygame.image.load("images/effects/drift_left_1.png").convert_alpha()),"driftingRight1":splitTileSet(pygame.image.load("images/effects/drift_right_1.png").convert_alpha()), "chargedJump1":splitTileSet(pygame.image.load("images/effects/drift_charged_jump.png").convert_alpha())}
 keysPressed = {}
 spd = 0.6
 timer = 0
@@ -60,26 +65,33 @@ def updatePlayer():
                 cJumpingTimer = 0
         elif not keysPressed[pygame.K_SPACE]:
             if cJumpingTimer > 60 and cJumping:
-                print('yoo')
+                player["vy"] += 2
             cJumping = False
         elif keysPressed[pygame.K_SPACE]:
             cJumpingTimer += 1
 
 def drawPlayer():
-    playerSprite = "front"
+    playerSprite:str = "front"
+    effectSprite:str = ""
     if cJumping:
         playerSprite = "charged"
+        effectSprite = "chargedJump1"
     elif drifting:
         if not driftingLeft:
             playerSprite = "driftingLeft"
+            effectSprite = "driftingRight1"
         else:
             playerSprite = "driftingRight"
+            effectSprite = "driftingLeft1"
     elif keysPressed[pygame.K_LEFT]:
         playerSprite = "left"
     elif keysPressed[pygame.K_RIGHT]:
         playerSprite = "right"
     sprite = playerSprites[playerSprite][math.floor(timer/animSpeed)%len(playerSprites[playerSprite])]
     screen.blit(sprite, (screen.get_width()/2-sprite.get_width()/2, screen.get_height()/2-sprite.get_height()/2))
+    if effectSprite != "":
+        eSprite = effectSprites[effectSprite][math.floor(timer/animSpeed)%len(effectSprites[effectSprite])]
+        screen.blit(eSprite, (screen.get_width()/2-eSprite.get_width()/2, screen.get_height()/2-eSprite.get_height()/2))
 
 while True:
     screen = pygame.surface.Surface(displaySize)
@@ -92,6 +104,8 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
+            elif event.key == pygame.K_F11:
+                pygame.display.toggle_fullscreen()
             newKeys.append(event.key)
 
     keysPressed = pygame.key.get_pressed()
