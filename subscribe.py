@@ -36,8 +36,15 @@ drift = 0
 drifting = False
 driftingLeft = False
 
+GRAV = 0.2
+
 def updatePlayer():
     global cJumping, cJumpingTimer, drift, driftingLeft, drifting
+    player["vy"] -= GRAV
+    player["y"] += player["vy"]
+    if player["y"] < 0:
+        player["y"] = 0
+        player["vy"] = 0
     if not keysPressed[pygame.K_SPACE]:
         drifting = False
     if not cJumping and (not drifting or (driftingLeft and keysPressed[pygame.K_SPACE])) and (keysPressed[pygame.K_LEFT] or (driftingLeft and drifting)):
@@ -65,7 +72,7 @@ def updatePlayer():
                 cJumpingTimer = 0
         elif not keysPressed[pygame.K_SPACE]:
             if cJumpingTimer > 60 and cJumping:
-                player["vy"] += 2
+                player["vy"] = 3.5
             cJumping = False
         elif keysPressed[pygame.K_SPACE]:
             cJumpingTimer += 1
@@ -88,10 +95,10 @@ def drawPlayer():
     elif keysPressed[pygame.K_RIGHT]:
         playerSprite = "right"
     sprite = playerSprites[playerSprite][math.floor(timer/animSpeed)%len(playerSprites[playerSprite])]
-    screen.blit(sprite, (screen.get_width()/2-sprite.get_width()/2, screen.get_height()/2-sprite.get_height()/2))
+    screen.blit(sprite, (screen.get_width()/2-sprite.get_width()/2, screen.get_height()/2-sprite.get_height()/2-player["y"]))
     if effectSprite != "":
         eSprite = effectSprites[effectSprite][math.floor(timer/animSpeed)%len(effectSprites[effectSprite])]
-        screen.blit(eSprite, (screen.get_width()/2-eSprite.get_width()/2, screen.get_height()/2-eSprite.get_height()/2))
+        screen.blit(eSprite, (screen.get_width()/2-eSprite.get_width()/2, screen.get_height()/2-eSprite.get_height()/2-player["y"]))
 
 while True:
     screen = pygame.surface.Surface(displaySize)
