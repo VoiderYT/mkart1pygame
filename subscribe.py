@@ -1,4 +1,5 @@
 import os
+os.environ["PYGAME_HIDE_SUPPORT_PROMPY"] = "true"
 try:
     import pygame
 except ImportError:
