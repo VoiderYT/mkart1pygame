@@ -37,8 +37,11 @@ def drawMap(dir):
         screen.blit(s, (0, y))
         y -= stripHeight
         d += 2
-        pos[0] += math.sin(math.radians(dir))*2
-        pos[1] += math.cos(math.radians(dir))*2
+        poses.append(pos)
+        pos[0] += math.sin(math.radians(dir))*5
+        pos[1] += math.cos(math.radians(dir))*5
+    for p in poses:
+        pygame.draw.circle(screen, (255, 255, 255), (screen.get_width()/2+p[0], screen.get_height()/2+p[1]), 5)
 
 while True:
     screen = pygame.surface.Surface(displaySize)
